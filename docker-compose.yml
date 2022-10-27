@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    image: gigflow
+    container_name: gigflow
+    ports:
+      - 8000:8000
+    volumes:
+      - ./:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      sh -c "python /app/manage.py migrate && gunicorn gigflow.wsgi -b 0.0.0.0:8000"
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:12.4
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: gigflow
+    volumes:
+      - postgres:/var/lib/postgresql/data
+volumes:
+  postgres:
+    driver: local
